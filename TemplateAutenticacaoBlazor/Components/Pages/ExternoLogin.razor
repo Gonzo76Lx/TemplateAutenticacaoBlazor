@@ -1,0 +1,118 @@
+@page "/externo/login"
+@page "/login"
+@layout AuthLayout
+@inject IUserAuthenticationService AuthService
+
+<PageTitle>Login - Portal Externo</PageTitle>
+
+<div class="card shadow border-0 mx-2">
+    <div class="card-header bg-success text-white text-center py-3 rounded-top">
+        <h4 class="mb-1 fw-bold">Portal Externo</h4>
+        <small class="text-white-50">Autenticação por Formulário (Forms Auth)</small>
+    </div>
+    <div class="card-body p-4">
+        @if (ErrorMessage != null)
+        {
+            <div class="alert alert-danger d-flex align-items-center mb-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <div>@ErrorMessage</div>
+            </div>
+        }
+
+        <!-- Formulário com submissão POST direta para o AuthController (/api/auth/login) -->
+        <form method="post" action="/api/auth/login">
+            <AntiforgeryToken />
+            <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+
+            <div class="mb-3">
+                <label for="usernameInput" class="form-label fw-semibold">Email ou Nome de Utilizador:</label>
+                <input type="text" 
+                       id="usernameInput" 
+                       name="Username" 
+                       class="form-control form-control-lg fs-6" 
+                       placeholder="ex: cliente@externo.pt" 
+                       value="@DemoUsername"
+                       required />
+            </div>
+
+            <div class="mb-3">
+                <label for="passwordInput" class="form-label fw-semibold">Palavra-passe:</label>
+                <input type="password" 
+                       id="passwordInput" 
+                       name="Password" 
+                       class="form-control form-control-lg fs-6" 
+                       placeholder="Palavra-passe" 
+                       value="@DemoPassword"
+                       required />
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="rememberMeCheck" name="RememberMe" value="true" />
+                <label class="form-check-label text-muted" for="rememberMeCheck">Lembrar-me neste dispositivo</label>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-lg fs-6 w-100 py-2 fw-bold shadow-sm">
+                Entrar e Criar HttpCookie
+            </button>
+        </form>
+
+        <hr class="my-4" />
+
+        <!-- Credenciais Demo para Testes Rápidos -->
+        <div class="bg-light p-3 rounded border">
+            <h6 class="fw-bold mb-2 text-dark">Contas Demo Rápidas:</h6>
+            <div class="d-grid gap-2">
+                @foreach (var user in DemoUsers)
+                {
+                    <button type="button" 
+                            class="btn btn-sm btn-outline-secondary text-start"
+                            @onclick="() => PreencherCredenciais(user.Username, user.Password)">
+                        <div class="fw-bold text-dark">@user.FullName <span class="badge bg-secondary ms-1">@user.Role</span></div>
+                        <small class="text-muted">User: <code>@user.Username</code> | Pass: <code>@user.Password</code></small>
+                    </button>
+                }
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <small class="text-muted">É colaborador interno?</small><br />
+            <a href="/auth/login-entra?returnUrl=@Uri.EscapeDataString(ReturnUrl ?? "/externo")" class="btn btn-link btn-sm text-decoration-none fw-semibold">
+                Iniciar Sessão com Microsoft Entra ID
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Error { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    private string? ErrorMessage { get; set; }
+    private string DemoUsername { get; set; } = "cliente@externo.pt";
+    private string DemoPassword { get; set; } = "Password123!";
+    private List<DemoUser> DemoUsers { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ReturnUrl ??= "/externo";
+        DemoUsers = await AuthService.GetAvailableDemoUsersAsync();
+
+        if (Error == "invalid_credentials")
+        {
+            ErrorMessage = "Credenciais inválidas. Verifique o email/utilizador e a palavra-passe.";
+        }
+        else if (Error == "missing_credentials")
+        {
+            ErrorMessage = "Por favor preencha todos os campos obrigatórios.";
+        }
+    }
+
+    private void PreencherCredenciais(string user, string pass)
+    {
+        DemoUsername = user;
+        DemoPassword = pass;
+    }
+}

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="TemplateAutenticacaoBlazor.Tests/TemplateAutenticacaoBlazor.Tests.csproj" />
+  <Project Path="TemplateAutenticacaoBlazor/TemplateAutenticacaoBlazor.csproj" />
+</Solution>

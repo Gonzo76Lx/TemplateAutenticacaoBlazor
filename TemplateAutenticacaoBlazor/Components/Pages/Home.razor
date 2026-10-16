@@ -1,0 +1,187 @@
+@page "/"
+
+<PageTitle>Template Autenticação Blazor - Início</PageTitle>
+
+<div class="container-fluid py-2">
+    <div class="p-4 mb-4 bg-light rounded-3 shadow-sm border">
+        <h1 class="display-6 fw-bold text-primary">Template de Autenticação Blazor Web App (SSR)</h1>
+        <p class="lead">
+            Template base para copiar e colar em futuros desenvolvimentos .NET 10 / Blazor (AKS / Kubernetes / IIS).
+            Suporta autenticação dupla por <strong>Domínio/DNS (Host)</strong> e por <strong>Caminho</strong>:
+            <strong>aplicacao-interno.dominio.com</strong> (Microsoft Entra ID) e <strong>aplicacao-externo.dominio.com</strong> (Forms Authentication), 
+            armazenando os dados de autenticação e claims personalizadas num <strong>HttpCookie seguro</strong> no mesmo Pod/Serviço.
+        </p>
+    </div>
+
+    <!-- Estado da Sessão Atual -->
+    <div class="card mb-4 border-primary shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <span class="fw-bold">Estado da Sessão Atual (HttpCookie)</span>
+            <AuthorizeView>
+                <Authorized>
+                    <span class="badge bg-light text-primary">Autenticado</span>
+                </Authorized>
+                <NotAuthorized>
+                    <span class="badge bg-warning text-dark">Não Autenticado (Anónimo)</span>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+        <div class="card-body">
+            <AuthorizeView>
+                <Authorized>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><strong>Nome:</strong> @context.User.Identity?.Name</li>
+                                <li class="list-group-item"><strong>Tipo de Utilizador (UserType):</strong> 
+                                    <span class="badge @(context.User.FindFirst("UserType")?.Value == "Interno" ? "bg-primary" : "bg-success")">
+                                        @(context.User.FindFirst("UserType")?.Value ?? "N/A")
+                                    </span>
+                                </li>
+                                <li class="list-group-item"><strong>Provedor de Autenticação:</strong> @(context.User.FindFirst("AuthenticationProvider")?.Value ?? "Cookie")</li>
+                                <li class="list-group-item"><strong>Email:</strong> @(context.User.FindFirst(ClaimTypes.Email)?.Value ?? "N/A")</li>
+                                <li class="list-group-item"><strong>Perfil / Role:</strong> @(context.User.FindFirst(ClaimTypes.Role)?.Value ?? "N/A")</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Todas as Claims Guardadas no Cookie:</h6>
+                            <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+                                <table class="table table-sm table-striped table-bordered">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Claim Type</th>
+                                            <th>Valor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var claim in context.User.Claims)
+                                        {
+                                            <tr>
+                                                <td><small class="text-muted">@claim.Type</small></td>
+                                                <td><code>@claim.Value</code></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-end">
+                        <a href="/auth/logout" class="btn btn-outline-danger btn-sm">Terminar Sessão (Limpar Cookie)</a>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <p class="text-muted mb-3">
+                        Nenhum utilizador autenticado no momento. Escolha um dos cenários abaixo para testar o fluxo de autenticação.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <a href="/interno" class="btn btn-primary">Testar Ponto de Entrada /interno (Entra ID)</a>
+                        <a href="/externo" class="btn btn-success">Testar Ponto de Entrada /externo (Forms Auth)</a>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
+
+    <!-- Cenários de Demonstração -->
+    <div class="row g-4 mb-4">
+        <!-- Cenário 1: /interno -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-0 border-top border-4 border-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge bg-primary fs-6 me-2">1</span>
+                        <h4 class="card-title mb-0">Ponto de Entrada: /interno</h4>
+                    </div>
+                    <p class="card-text text-muted">
+                        Destinado a colaboradores internos. Quando o utilizador acede a <code>/interno</code> sem sessão iniciada:
+                    </p>
+                    <ul>
+                        <li>Despoleta o desafio de autenticação via <strong>Microsoft Entra ID (OpenID Connect)</strong>.</li>
+                        <li>Após validação no Entra ID, enriquece a identidade com claims internas (<code>UserType=Interno</code>, <code>Departamento</code>, etc.).</li>
+                        <li>Grava as credenciais e claims no <strong>HttpCookie seguro</strong> da aplicação.</li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-transparent border-0 pb-3">
+                    <a href="/interno" class="btn btn-primary w-100">
+                        Aceder a /interno (Entra ID)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cenário 2: /externo -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-0 border-top border-4 border-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge bg-success fs-6 me-2">2</span>
+                        <h4 class="card-title mb-0">Ponto de Entrada: /externo</h4>
+                    </div>
+                    <p class="card-text text-muted">
+                        Destinado a clientes ou parceiros externos. Quando o utilizador acede a <code>/externo</code> sem sessão iniciada:
+                    </p>
+                    <ul>
+                        <li>Redireciona para o formulário de login (<code>/externo/login</code>).</li>
+                        <li>O formulário é submetido via POST para o serviço REST (<code>AuthController: /api/auth/login</code>).</li>
+                        <li>Valida as credenciais, injeta claims externas (<code>UserType=Externo</code>, <code>NIF</code>, <code>Empresa</code>) e grava o <strong>HttpCookie</strong>.</li>
+                        <li>Redireciona de volta para <code>/externo</code> com sessão ativa.</li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-transparent border-0 pb-3">
+                    <a href="/externo" class="btn btn-success w-100">
+                        Aceder a /externo (Forms Auth)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guia de Integração e Copy-Paste -->
+    <div class="card shadow-sm border-secondary">
+        <div class="card-header bg-dark text-white fw-bold">
+            Como utilizar este Template em novos projetos (Copy &amp; Paste)
+        </div>
+        <div class="card-body">
+            <h6>1. Autenticação Automática por Domínio DNS (AKS Ingress / NGINX / Cloudflare)</h6>
+            <p class="text-muted">
+                O template inclui o middleware <code>DomainAuthenticationMiddleware</code> configurado para detetar o host do pedido:
+            </p>
+            <ul>
+                <li>Quando acedido por <code>aplicacao-interno.dominio.com</code>: força imediatamente autenticação com <strong>Microsoft Entra ID</strong>.</li>
+                <li>Quando acedido por <code>aplicacao-externo.dominio.com</code>: força autenticação por formulário <strong>Forms Auth</strong>.</li>
+            </ul>
+
+            <h6 class="mt-4">2. Configuração em Debug / Desenvolvimento Local (Localhost)</h6>
+            <p class="text-muted">
+                Em desenvolvimento local (onde o host é <code>localhost</code>), pode configurar no <code>appsettings.Development.json</code> se deseja testar o comportamento Interno ou Externo:
+            </p>
+            <pre class="bg-light p-3 border rounded"><code>"DomainRouting": {
+  "DebugOverrideMode": "Auto" // Opções: "Auto" (padrão pelo host), "Interno" (força Entra ID), "Externo" (força Forms Auth)
+}</code></pre>
+
+            <h6 class="mt-4">3. Configuração do Microsoft Entra ID (Azure AD)</h6>
+            <p class="text-muted">
+                No ficheiro <code>appsettings.json</code>, preencha os dados da sua aplicação registada no Microsoft Entra Portal:
+            </p>
+            <pre class="bg-light p-3 border rounded"><code>"AzureAd": {
+  "Instance": "https://login.microsoftonline.com/",
+  "Domain": "suaempresa.onmicrosoft.com",
+  "TenantId": "00000000-0000-0000-0000-000000000000",
+  "ClientId": "11111111-1111-1111-1111-111111111111",
+  "CallbackPath": "/signin-oidc",
+  "SignedOutCallbackPath": "/signout-callback-oidc"
+}</code></pre>
+
+            <h6 class="mt-4">4. Personalizar as Claims Guardadas no Cookie</h6>
+            <p class="text-muted">
+                Edite a classe <code>Services/AuthClaimsEnricher.cs</code> para adicionar ou remover claims personalizadas conforme as regras de negócio da sua organização.
+            </p>
+
+            <h6 class="mt-4">5. Proteger Páginas e Componentes</h6>
+            <p class="text-muted">
+                Utilize os atributos <code>[Authorize(Policy = "InternoPolicy")]</code> ou <code>[Authorize(Policy = "ExternoPolicy")]</code> nas páginas Razor ou controladores.
+            </p>
+        </div>
+    </div>
+</div>

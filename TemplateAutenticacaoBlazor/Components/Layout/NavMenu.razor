@@ -1,0 +1,49 @@
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="">Auth Template</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Início / Guia
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="interno">
+                <span class="bi bi-shield-lock-fill-nav-menu" aria-hidden="true"></span> /interno (Entra ID)
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="externo">
+                <span class="bi bi-person-badge-fill-nav-menu" aria-hidden="true"></span> /externo (Forms Auth)
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="externo/login">
+                <span class="bi bi-box-arrow-in-right-nav-menu" aria-hidden="true"></span> Login Externo
+            </NavLink>
+        </div>
+
+        <hr class="text-white-50 mx-3 my-2" />
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="counter">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Exemplo Counter
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <a class="nav-link" href="/api/auth/me" target="_blank">
+                <span class="bi bi-code-slash-nav-menu" aria-hidden="true"></span> API /api/auth/me ↗
+            </a>
+        </div>
+    </nav>
+</div>

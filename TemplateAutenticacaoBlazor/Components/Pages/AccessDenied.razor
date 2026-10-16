@@ -1,0 +1,47 @@
+@page "/access-denied"
+
+<PageTitle>Acesso Negado</PageTitle>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger shadow-sm">
+                <div class="card-header bg-danger text-white fw-bold">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Acesso Negado (403)
+                </div>
+                <div class="card-body p-4">
+                    <h5 class="card-title text-danger">Não possui permissões para aceder ao recurso pretendido.</h5>
+                    <p class="card-text text-muted">
+                        A sua identidade atual não satisfaz as políticas de segurança exigidas por este ponto de entrada (por exemplo, tentativa de aceder a <code>/interno</code> com conta externa ou vice-versa).
+                    </p>
+                    
+                    <AuthorizeView>
+                        <Authorized>
+                            <div class="p-3 bg-light rounded border mb-3">
+                                <small class="text-muted d-block">Utilizador atual:</small>
+                                <strong>@context.User.Identity?.Name</strong> 
+                                (<span class="badge bg-secondary">@(context.User.FindFirst("UserType")?.Value ?? "Desconhecido")</span>)
+                            </div>
+                        </Authorized>
+                    </AuthorizeView>
+
+                    <hr />
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/externo/login" class="btn btn-outline-success">
+                            Login Portal Externo
+                        </a>
+                        <a href="/auth/login-entra" class="btn btn-outline-primary">
+                            Login Portal Interno (Entra ID)
+                        </a>
+                        <a href="/auth/logout" class="btn btn-outline-danger">
+                            Terminar Sessão Atual
+                        </a>
+                        <a href="/" class="btn btn-secondary">
+                            Página Inicial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

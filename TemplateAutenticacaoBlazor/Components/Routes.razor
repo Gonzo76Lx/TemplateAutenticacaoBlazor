@@ -1,0 +1,53 @@
+<Router AppAssembly="typeof(Program).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                <div class="container mt-5">
+                    <div class="card border-warning shadow-sm">
+                        <div class="card-header bg-warning text-dark fw-bold">
+                            Acesso Não Autorizado / Autenticação Necessária
+                        </div>
+                        <div class="card-body p-4">
+                            <h5 class="card-title">Não tem permissões suficientes ou não está autenticado.</h5>
+                            <p class="card-text text-muted">
+                                Para aceder a este recurso, autentique-se através do ponto de entrada correto.
+                            </p>
+                            <hr />
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="/externo/login" class="btn btn-outline-primary">
+                                    Login Portal Externo (Forms)
+                                </a>
+                                <a href="/auth/login-entra" class="btn btn-primary">
+                                    Login Portal Interno (Microsoft Entra ID)
+                                </a>
+                                <a href="/" class="btn btn-secondary">
+                                    Voltar ao Início
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </NotAuthorized>
+            <Authorizing>
+                <div class="d-flex justify-content-center align-items-center p-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">A verificar autenticação...</span>
+                    </div>
+                    <span class="ms-3 fs-5">A validar autenticação e permissões de acesso...</span>
+                </div>
+            </Authorizing>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(Layout.MainLayout)">
+            <div class="container mt-5">
+                <div class="alert alert-danger shadow-sm p-4">
+                    <h4 class="alert-heading">404 - Página Não Encontrada</h4>
+                    <p>O endereço solicitado não existe neste servidor.</p>
+                    <a href="/" class="btn btn-primary mt-2">Página Inicial</a>
+                </div>
+            </div>
+        </LayoutView>
+    </NotFound>
+</Router>
